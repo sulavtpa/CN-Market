@@ -3,6 +3,7 @@ package net.craftnepal.market.Listeners;
 import net.craftnepal.market.Market;
 import net.craftnepal.market.files.RegionData;
 import net.craftnepal.market.utils.*;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -70,16 +71,20 @@ public class Movement implements Listener {
 
     private void handleExitMarket(Player player, UUID uuid) {
         if (playersInMarket.containsKey(uuid) && player.getAllowFlight()) {
-            player.setAllowFlight(false);
+            if (player.getGameMode() != GameMode.SPECTATOR) {
+                player.setAllowFlight(false);
+                SendMessage.sendPlayerMessage(player, "&cDisabled flying!");
+            }
             playersInMarket.remove(uuid);
-            SendMessage.sendPlayerMessage(player, "&cDisabled flying!");
         }
     }
 
     public static void checkAndToggle(Player player, boolean toggle) {
         boolean allowFlight = Market.getMainConfig().getBoolean("allow-flight", false);
         if (allowFlight) {
-            player.setAllowFlight(toggle);
+            if (toggle || player.getGameMode() != GameMode.SPECTATOR) {
+                player.setAllowFlight(toggle);
+            }
 
             if (toggle) {
                 playersInMarket.put(player.getUniqueId(), true);
